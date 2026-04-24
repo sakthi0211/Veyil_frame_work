@@ -4,11 +4,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Scan</title>
 
-<script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
 
 <style>
-body { margin:0; overflow:hidden; background:black; }
+body {
+  margin:0;
+  overflow:hidden;
+  background:black;
+}
 
 #startBtn {
   position:absolute;
@@ -30,36 +34,38 @@ body { margin:0; overflow:hidden; background:black; }
 
 <button id="startBtn">Start Scan</button>
 
-<a-scene
-  id="scene"
-  mindar-image="imageTargetSrc: ./targets.mind;"
-  embedded
-  vr-mode-ui="enabled: false"
-  device-orientation-permission-ui="enabled: false"
-  style="display:none;"
->
-
-  <a-assets>
-    <video id="video" src="./video.mp4" preload="auto" loop muted playsinline></video>
-  </a-assets>
-
-  <a-camera position="0 0 0"></a-camera>
-
-  <a-entity mindar-image-target="targetIndex: 0">
-    <a-video src="#video" width="1" height="0.6"></a-video>
-  </a-entity>
-
-</a-scene>
-
 <script>
 document.getElementById("startBtn").onclick = async () => {
-  const scene = document.querySelector("#scene");
 
   document.getElementById("startBtn").style.display = "none";
-  scene.style.display = "block";
 
-  const mindarSystem = scene.systems["mindar-image-system"];
-  await mindarSystem.start();
+  const mindarThree = new window.MINDAR.IMAGE.MindARThree({
+    container: document.body,
+    imageTargetSrc: "./targets.mind",
+  });
+
+  const {renderer, scene, camera} = mindarThree;
+
+  const video = document.createElement("video");
+  video.src = "./video.mp4";
+  video.loop = true;
+  video.muted = true;
+  video.playsInline = true;
+  video.play();
+
+  const texture = new THREE.VideoTexture(video);
+  const geometry = new THREE.PlaneGeometry(1, 0.6);
+  const material = new THREE.MeshBasicMaterial({ map: texture });
+  const plane = new THREE.Mesh(geometry, material);
+
+  const anchor = mindarThree.addAnchor(0);
+  anchor.group.add(plane);
+
+  await mindarThree.start();
+
+  renderer.setAnimationLoop(() => {
+    renderer.render(scene, camera);
+  });
 };
 </script>
 

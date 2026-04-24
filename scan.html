@@ -1,15 +1,48 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Scan Magic Frame</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scan Magic Frame</title>
+
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+
+  <!-- MindAR -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
 </head>
 
-<body style="margin:0; background:black; color:white; text-align:center;">
+<body style="margin:0; overflow:hidden;">
 
-<h2 style="margin-top:50px;">AR Scanner Coming Soon 🔥</h2>
+<a-scene
+  mindar-image="imageTargetSrc: targets.mind;"
+  embedded
+  color-space="sRGB"
+  renderer="colorManagement: true, physicallyCorrectLights"
+  vr-mode-ui="enabled: false"
+  device-orientation-permission-ui="enabled: false"
+>
 
-<p>This is where your photo → video magic will happen</p>
+  <!-- Camera -->
+  <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+  <!-- Image target -->
+  <a-entity mindar-image-target="targetIndex: 0">
+
+    <!-- Video -->
+    <a-video
+      src="#video"
+      width="1"
+      height="0.6"
+      position="0 0 0"
+      rotation="0 0 0"
+    ></a-video>
+
+  </a-entity>
+
+</a-scene>
+
+<!-- Video Asset -->
+<video id="video" src="video.mp4" loop="true" crossorigin="anonymous"></video>
 
 </body>
 </html>

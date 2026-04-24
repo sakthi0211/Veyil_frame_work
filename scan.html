@@ -33,14 +33,20 @@ body {
 
 <button id="startBtn">Start Scan</button>
 
-<a-scene
-  id="scene"
-  mindar-image="imageTargetSrc: targets.mind;"
-  embedded
-  vr-mode-ui="enabled: false"
-  device-orientation-permission-ui="enabled: false"
-  style="display:none;"
->
+<script>
+document.getElementById("startBtn").addEventListener("click", async () => {
+  const scene = document.querySelector("a-scene");
+  document.getElementById("startBtn").style.display = "none";
+  scene.style.display = "block";
+
+  const mindarSystem = scene.systems["mindar-image-system"];
+  await mindarSystem.start({
+    videoSettings: {
+      facingMode: "environment"
+    }
+  });
+});
+</script>
 
   <a-assets>
     <video id="video" src="video.mp4" loop muted playsinline></video>

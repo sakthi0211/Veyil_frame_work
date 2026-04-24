@@ -2,16 +2,13 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scan Magic Frame</title>
+<title>Scan</title>
 
 <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
 
 <style>
-body {
-  margin:0;
-  background:black;
-}
+body { margin:0; overflow:hidden; background:black; }
 
 #startBtn {
   position:absolute;
@@ -33,26 +30,20 @@ body {
 
 <button id="startBtn">Start Scan</button>
 
-<script>
-document.getElementById("startBtn").addEventListener("click", async () => {
-  const scene = document.querySelector("a-scene");
-  document.getElementById("startBtn").style.display = "none";
-  scene.style.display = "block";
-
-  const mindarSystem = scene.systems["mindar-image-system"];
-  await mindarSystem.start({
-    videoSettings: {
-      facingMode: "environment"
-    }
-  });
-});
-</script>
+<a-scene
+  id="scene"
+  mindar-image="imageTargetSrc: ./targets.mind;"
+  embedded
+  vr-mode-ui="enabled: false"
+  device-orientation-permission-ui="enabled: false"
+  style="display:none;"
+>
 
   <a-assets>
-    <video id="video" src="video.mp4" loop muted playsinline></video>
+    <video id="video" src="./video.mp4" preload="auto" loop muted playsinline></video>
   </a-assets>
 
-  <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+  <a-camera position="0 0 0"></a-camera>
 
   <a-entity mindar-image-target="targetIndex: 0">
     <a-video src="#video" width="1" height="0.6"></a-video>
@@ -61,14 +52,15 @@ document.getElementById("startBtn").addEventListener("click", async () => {
 </a-scene>
 
 <script>
-document.getElementById("startBtn").addEventListener("click", async () => {
-  const scene = document.querySelector("a-scene");
+document.getElementById("startBtn").onclick = async () => {
+  const scene = document.querySelector("#scene");
+
   document.getElementById("startBtn").style.display = "none";
   scene.style.display = "block";
 
   const mindarSystem = scene.systems["mindar-image-system"];
   await mindarSystem.start();
-});
+};
 </script>
 
 </body>

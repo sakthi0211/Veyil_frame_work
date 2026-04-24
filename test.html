@@ -1,17 +1,64 @@
 <!DOCTYPE html>
 <html>
-<body style="margin:0; background:black;">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scan</title>
 
-<video id="cam" autoplay playsinline style="width:100%; height:100vh;"></video>
+<script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
+
+<style>
+body { margin:0; overflow:hidden; }
+
+#startBtn {
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  padding:15px 25px;
+  background:#ff4da6;
+  color:white;
+  border:none;
+  border-radius:10px;
+  z-index:10;
+}
+</style>
+</head>
+
+<body>
+
+<button id="startBtn">Start</button>
+
+<a-scene
+  id="scene"
+  mindar-image="imageTargetSrc: targets.mind; autoStart: false;"
+  embedded
+  vr-mode-ui="enabled: false"
+  device-orientation-permission-ui="enabled: false"
+  style="display:none;"
+>
+
+<a-assets>
+  <video id="vid" src="video.mp4" loop muted playsinline></video>
+</a-assets>
+
+<a-camera position="0 0 0"></a-camera>
+
+<a-entity mindar-image-target="targetIndex: 0">
+  <a-video src="#vid" width="1" height="0.6"></a-video>
+</a-entity>
+
+</a-scene>
 
 <script>
-navigator.mediaDevices.getUserMedia({ video: true })
-.then(stream => {
-  document.getElementById('cam').srcObject = stream;
-})
-.catch(err => {
-  alert("Camera Error: " + err);
-});
+document.getElementById("startBtn").onclick = async () => {
+  document.getElementById("startBtn").style.display = "none";
+  const scene = document.getElementById("scene");
+  scene.style.display = "block";
+
+  const mindarSystem = scene.systems["mindar-image-system"];
+  await mindarSystem.start();
+};
 </script>
 
 </body>

@@ -1,57 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Scan</title>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
 
 <style>
-body { margin:0; overflow:hidden; background:black; }
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: black;
+}
 
-/* canvas full screen */
+/* FORCE FULL SCREEN CAMERA CANVAS */
 canvas {
-  position: fixed;
-  top:0; left:0;
-  width:100% !important;
-  height:100% !important;
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  object-fit: cover;
 }
 
-/* start button */
+/* Start Button */
 #startBtn {
-  position:absolute;
-  top:50%; left:50%;
-  transform:translate(-50%,-50%);
-  padding:15px 25px;
-  font-size:18px;
-  background:#ff4da6;
-  color:white;
-  border:none;
-  border-radius:10px;
-  z-index:10;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 16px 28px;
+  font-size: 18px;
+  background: #ff4da6;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  z-index: 10;
 }
 
-/* status text */
+/* Status */
 #status {
-  position:absolute;
-  top:20px;
-  left:50%;
-  transform:translateX(-50%);
-  color:white;
-  font-size:18px;
-  z-index:10;
-}
-
-/* full screen video overlay */
-#fullscreenVideo {
-  position:fixed;
-  top:0; left:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:none;
-  z-index:9;
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 16px;
+  z-index: 10;
 }
 </style>
 </head>
@@ -59,26 +58,25 @@ canvas {
 <body>
 
 <button id="startBtn">Start Scan</button>
-<div id="status">Click Start</div>
-
-<!-- Full screen video -->
-<video id="fullscreenVideo" src="./video.mp4" loop muted playsinline></video>
+<div id="status">Ready</div>
 
 <script>
 document.getElementById("startBtn").onclick = async () => {
 
   document.getElementById("startBtn").style.display = "none";
-  document.getElementById("status").innerText = "Scanning...";
+  document.getElementById("status").innerText = "Opening Camera...";
 
   const mindarThree = new window.MINDAR.IMAGE.MindARThree({
     container: document.body,
     imageTargetSrc: "./targets.mind",
-    videoSettings: { facingMode: "environment" }
+    videoSettings: {
+      facingMode: { exact: "environment" } // force rear camera
+    }
   });
 
   const {renderer, scene, camera} = mindarThree;
 
-  // 🎬 Video for AR plane
+  // 🎬 Video
   const video = document.createElement("video");
   video.src = "./video.mp4";
   video.loop = true;
@@ -87,8 +85,8 @@ document.getElementById("startBtn").onclick = async () => {
 
   const texture = new THREE.VideoTexture(video);
 
-  // 📐 Bigger plane (nearly full view)
-  const geometry = new THREE.PlaneGeometry(2, 1.2);
+  // 🔥 Bigger plane
+  const geometry = new THREE.PlaneGeometry(2.2, 1.3);
   const material = new THREE.MeshBasicMaterial({ map: texture });
   const plane = new THREE.Mesh(geometry, material);
   plane.visible = false;
@@ -96,37 +94,30 @@ document.getElementById("startBtn").onclick = async () => {
   const anchor = mindarThree.addAnchor(0);
   anchor.group.add(plane);
 
-  const fullVideo = document.getElementById("fullscreenVideo");
-
-  // 🔥 EVENTS
+  // EVENTS
   anchor.onTargetFound = () => {
-    console.log("TARGET FOUND");
     document.getElementById("status").innerText = "TARGET FOUND 🔥";
-
     plane.visible = true;
     video.play();
-
-    // also show full screen version
-    fullVideo.style.display = "block";
-    fullVideo.play();
   };
 
   anchor.onTargetLost = () => {
-    console.log("TARGET LOST");
-    document.getElementById("status").innerText = "TARGET LOST ❌";
-
+    document.getElementById("status").innerText = "Searching...";
     plane.visible = false;
     video.pause();
-
-    fullVideo.style.display = "none";
-    fullVideo.pause();
   };
 
   await mindarThree.start();
 
+  // 🔥 CRITICAL: force full screen render
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
   renderer.setAnimationLoop(() => {
     renderer.render(scene, camera);
   });
+
+  document.getElementById("status").innerText = "Scanning...";
 };
 </script>
 

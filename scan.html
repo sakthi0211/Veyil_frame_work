@@ -46,20 +46,39 @@ document.getElementById("startBtn").onclick = async () => {
 
   const {renderer, scene, camera} = mindarThree;
 
+  // 🔹 Create video
   const video = document.createElement("video");
   video.src = "./video.mp4";
   video.loop = true;
   video.muted = true;
   video.playsInline = true;
-  video.play();
 
+  // 🔹 Create texture
   const texture = new THREE.VideoTexture(video);
+
+  // 🔹 Plane
   const geometry = new THREE.PlaneGeometry(1, 0.6);
   const material = new THREE.MeshBasicMaterial({ map: texture });
   const plane = new THREE.Mesh(geometry, material);
 
+  plane.visible = false; // hide initially
+
+  // 🔹 Anchor
   const anchor = mindarThree.addAnchor(0);
   anchor.group.add(plane);
+
+  // 🔥 Detection events
+  anchor.onTargetFound = () => {
+    console.log("TARGET FOUND 🔥");
+    plane.visible = true;
+    video.play();
+  };
+
+  anchor.onTargetLost = () => {
+    console.log("TARGET LOST ❌");
+    plane.visible = false;
+    video.pause();
+  };
 
   await mindarThree.start();
 

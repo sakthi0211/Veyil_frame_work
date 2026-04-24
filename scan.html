@@ -8,25 +8,21 @@
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
 
 <style>
-body {
-  margin:0;
-  overflow:hidden;
-  background:black;
-}
+body { margin:0; overflow:hidden; background:black; }
 
+/* canvas full screen */
 canvas {
+  position: fixed;
+  top:0; left:0;
   width:100% !important;
   height:100% !important;
-  position:fixed;
-  top:0;
-  left:0;
 }
 
+/* start button */
 #startBtn {
   position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%, -50%);
+  top:50%; left:50%;
+  transform:translate(-50%,-50%);
   padding:15px 25px;
   font-size:18px;
   background:#ff4da6;
@@ -35,74 +31,98 @@ canvas {
   border-radius:10px;
   z-index:10;
 }
+
+/* status text */
+#status {
+  position:absolute;
+  top:20px;
+  left:50%;
+  transform:translateX(-50%);
+  color:white;
+  font-size:18px;
+  z-index:10;
+}
+
+/* full screen video overlay */
+#fullscreenVideo {
+  position:fixed;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:none;
+  z-index:9;
+}
 </style>
 </head>
 
 <body>
 
 <button id="startBtn">Start Scan</button>
+<div id="status">Click Start</div>
+
+<!-- Full screen video -->
+<video id="fullscreenVideo" src="./video.mp4" loop muted playsinline></video>
 
 <script>
 document.getElementById("startBtn").onclick = async () => {
 
   document.getElementById("startBtn").style.display = "none";
+  document.getElementById("status").innerText = "Scanning...";
 
   const mindarThree = new window.MINDAR.IMAGE.MindARThree({
     container: document.body,
     imageTargetSrc: "./targets.mind",
-    videoSettings: {
-      facingMode: "environment" // rear camera
-    }
+    videoSettings: { facingMode: "environment" }
   });
 
   const {renderer, scene, camera} = mindarThree;
 
-  // 🎬 Create video
+  // 🎬 Video for AR plane
   const video = document.createElement("video");
   video.src = "./video.mp4";
-  video.crossOrigin = "anonymous";
   video.loop = true;
   video.muted = true;
   video.playsInline = true;
-  video.autoplay = true;
 
-  await video.play().catch(() => {
-    console.log("Autoplay blocked, will start on detection");
-  });
-
-  // 🎥 Create texture
   const texture = new THREE.VideoTexture(video);
 
-  // 📐 Plane (bigger + better fit)
-  const geometry = new THREE.PlaneGeometry(1.4, 0.9);
-  const material = new THREE.MeshBasicMaterial({
-    map: texture,
-    side: THREE.DoubleSide
-  });
-
+  // 📐 Bigger plane (nearly full view)
+  const geometry = new THREE.PlaneGeometry(2, 1.2);
+  const material = new THREE.MeshBasicMaterial({ map: texture });
   const plane = new THREE.Mesh(geometry, material);
   plane.visible = false;
 
-  // 🎯 Anchor
   const anchor = mindarThree.addAnchor(0);
   anchor.group.add(plane);
 
-  // 🔥 Detection events
+  const fullVideo = document.getElementById("fullscreenVideo");
+
+  // 🔥 EVENTS
   anchor.onTargetFound = () => {
-    console.log("TARGET FOUND 🔥");
+    console.log("TARGET FOUND");
+    document.getElementById("status").innerText = "TARGET FOUND 🔥";
+
     plane.visible = true;
     video.play();
+
+    // also show full screen version
+    fullVideo.style.display = "block";
+    fullVideo.play();
   };
 
   anchor.onTargetLost = () => {
-    console.log("TARGET LOST ❌");
+    console.log("TARGET LOST");
+    document.getElementById("status").innerText = "TARGET LOST ❌";
+
     plane.visible = false;
     video.pause();
+
+    fullVideo.style.display = "none";
+    fullVideo.pause();
   };
 
   await mindarThree.start();
-
-  renderer.setSize(window.innerWidth, window.innerHeight);
 
   renderer.setAnimationLoop(() => {
     renderer.render(scene, camera);

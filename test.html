@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<body style="margin:0; background:black;">
+
+<video id="cam" autoplay playsinline style="width:100%; height:100vh;"></video>
+
+<script>
+navigator.mediaDevices.getUserMedia({ video: true })
+.then(stream => {
+  document.getElementById('cam').srcObject = stream;
+})
+.catch(err => {
+  alert("Camera Error: " + err);
+});
+</script>
+
+</body>
+</html>

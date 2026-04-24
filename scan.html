@@ -14,6 +14,14 @@ body {
   background:black;
 }
 
+canvas {
+  width:100% !important;
+  height:100% !important;
+  position:fixed;
+  top:0;
+  left:0;
+}
+
 #startBtn {
   position:absolute;
   top:50%;
@@ -42,28 +50,40 @@ document.getElementById("startBtn").onclick = async () => {
   const mindarThree = new window.MINDAR.IMAGE.MindARThree({
     container: document.body,
     imageTargetSrc: "./targets.mind",
+    videoSettings: {
+      facingMode: "environment" // rear camera
+    }
   });
 
   const {renderer, scene, camera} = mindarThree;
 
-  // 🔹 Create video
+  // 🎬 Create video
   const video = document.createElement("video");
   video.src = "./video.mp4";
+  video.crossOrigin = "anonymous";
   video.loop = true;
   video.muted = true;
   video.playsInline = true;
+  video.autoplay = true;
 
-  // 🔹 Create texture
+  await video.play().catch(() => {
+    console.log("Autoplay blocked, will start on detection");
+  });
+
+  // 🎥 Create texture
   const texture = new THREE.VideoTexture(video);
 
-  // 🔹 Plane
-  const geometry = new THREE.PlaneGeometry(1, 0.6);
-  const material = new THREE.MeshBasicMaterial({ map: texture });
+  // 📐 Plane (bigger + better fit)
+  const geometry = new THREE.PlaneGeometry(1.4, 0.9);
+  const material = new THREE.MeshBasicMaterial({
+    map: texture,
+    side: THREE.DoubleSide
+  });
+
   const plane = new THREE.Mesh(geometry, material);
+  plane.visible = false;
 
-  plane.visible = false; // hide initially
-
-  // 🔹 Anchor
+  // 🎯 Anchor
   const anchor = mindarThree.addAnchor(0);
   anchor.group.add(plane);
 
@@ -81,6 +101,8 @@ document.getElementById("startBtn").onclick = async () => {
   };
 
   await mindarThree.start();
+
+  renderer.setSize(window.innerWidth, window.innerHeight);
 
   renderer.setAnimationLoop(() => {
     renderer.render(scene, camera);

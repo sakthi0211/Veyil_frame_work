@@ -4,45 +4,62 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Scan Magic Frame</title>
 
-  <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
-
-  <!-- MindAR -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
 </head>
 
-<body style="margin:0; overflow:hidden;">
+<body style="margin:0; overflow:hidden; background:black;">
+
+<!-- Start Button -->
+<button id="startBtn" style="
+position:absolute;
+z-index:10;
+top:50%;
+left:50%;
+transform:translate(-50%, -50%);
+padding:15px 25px;
+font-size:18px;
+border:none;
+border-radius:10px;
+background:#ff4da6;
+color:white;
+">
+Start Scan
+</button>
 
 <a-scene
+  id="scene"
   mindar-image="imageTargetSrc: targets.mind;"
   embedded
-  color-space="sRGB"
-  renderer="colorManagement: true, physicallyCorrectLights"
   vr-mode-ui="enabled: false"
   device-orientation-permission-ui="enabled: false"
+  style="display:none;"
 >
 
-  <!-- Camera -->
+  <a-assets>
+    <video id="video" src="video.mp4" preload="auto" loop muted playsinline></video>
+  </a-assets>
+
   <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-  <!-- Image target -->
   <a-entity mindar-image-target="targetIndex: 0">
-
-    <!-- Video -->
-    <a-video
-      src="#video"
-      width="1"
-      height="0.6"
-      position="0 0 0"
-      rotation="0 0 0"
-    ></a-video>
-
+    <a-video src="#video" width="1" height="0.6"></a-video>
   </a-entity>
 
 </a-scene>
 
-<!-- Video Asset -->
-<video id="video" src="video.mp4" loop="true" crossorigin="anonymous"></video>
+<script>
+const btn = document.getElementById("startBtn");
+const scene = document.querySelector("#scene");
+
+btn.addEventListener("click", async () => {
+  btn.style.display = "none";
+  scene.style.display = "block";
+
+  const mindarSystem = scene.systems["mindar-image-system"];
+  await mindarSystem.start();
+});
+</script>
 
 </body>
 </html>

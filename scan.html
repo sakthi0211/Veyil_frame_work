@@ -1,31 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scan Magic Frame</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scan Magic Frame</title>
 
-  <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
+<script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-aframe.prod.js"></script>
+
+<style>
+body {
+  margin:0;
+  background:black;
+}
+
+#startBtn {
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  padding:15px 25px;
+  font-size:18px;
+  background:#ff4da6;
+  color:white;
+  border:none;
+  border-radius:10px;
+  z-index:10;
+}
+</style>
 </head>
 
-<body style="margin:0; overflow:hidden; background:black;">
+<body>
 
-<!-- Start Button -->
-<button id="startBtn" style="
-position:absolute;
-z-index:10;
-top:50%;
-left:50%;
-transform:translate(-50%, -50%);
-padding:15px 25px;
-font-size:18px;
-border:none;
-border-radius:10px;
-background:#ff4da6;
-color:white;
-">
-Start Scan
-</button>
+<button id="startBtn">Start Scan</button>
 
 <a-scene
   id="scene"
@@ -37,7 +43,7 @@ Start Scan
 >
 
   <a-assets>
-    <video id="video" src="video.mp4" preload="auto" loop muted playsinline></video>
+    <video id="video" src="video.mp4" loop muted playsinline></video>
   </a-assets>
 
   <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
@@ -49,11 +55,9 @@ Start Scan
 </a-scene>
 
 <script>
-const btn = document.getElementById("startBtn");
-const scene = document.querySelector("#scene");
-
-btn.addEventListener("click", async () => {
-  btn.style.display = "none";
+document.getElementById("startBtn").addEventListener("click", async () => {
+  const scene = document.querySelector("a-scene");
+  document.getElementById("startBtn").style.display = "none";
   scene.style.display = "block";
 
   const mindarSystem = scene.systems["mindar-image-system"];
